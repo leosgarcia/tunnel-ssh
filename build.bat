@@ -28,6 +28,9 @@ echo.
 echo [wltech] Gerando executavel...
 :: Adicionando as dependencias do customtkinter e o icone
 python -m PyInstaller --onefile --windowed --name "wltech-tunnel" --icon="assets\icon.ico" --add-data "assets;assets" src\main.py
+if exist dist\wltech-tunnel.exe (
+    echo [wltech] Build concluido com sucesso.
+)
 
 echo.
 if exist dist\wltech-tunnel.exe (

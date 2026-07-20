@@ -20,11 +20,18 @@ def _get_config_path() -> str:
 
 CONFIG_FILE = _get_config_path()
 
+
+def ensure_config_dir(path: str) -> None:
+    directory = os.path.dirname(path)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
+
 DEFAULT_CONFIG: Dict[str, Any] = {
     "ssh_host": "usuario@host",
     "ssh_key": "",
     "reconnect_delay": 5,
-    "ports": []
+    "ports": [],
+    "saved_hosts": {}
 }
 
 def load_config() -> Dict[str, Any]:
@@ -36,13 +43,26 @@ def load_config() -> Dict[str, Any]:
                 if "reconnect_delay" not in data: data["reconnect_delay"] = DEFAULT_CONFIG["reconnect_delay"]
                 if "ssh_key" not in data: data["ssh_key"] = DEFAULT_CONFIG["ssh_key"]
                 if "ports" not in data: data["ports"] = DEFAULT_CONFIG["ports"]
+                if "saved_hosts" not in data: data["saved_hosts"] = {}
+                
+                # Migração inicial para garantir que o host atual exista no dicionário
+                current = data["ssh_host"]
+                if current not in data["saved_hosts"]:
+                    data["saved_hosts"][current] = {
+                        "key": data.get("ssh_key", ""),
+                        "ports": data.get("ports", [])
+                    }
                 return data
         except Exception as e:
             logger.error(f"Erro ao ler arquivo de configuração: {e}")
-    return json.loads(json.dumps(DEFAULT_CONFIG))
+    data = json.loads(json.dumps(DEFAULT_CONFIG))
+    # Inicializa com o padrão no dict também
+    data["saved_hosts"][data["ssh_host"]] = {"key": data["ssh_key"], "ports": data["ports"]}
+    return data
 
 def save_config(cfg: Dict[str, Any]) -> None:
     try:
+        ensure_config_dir(CONFIG_FILE)
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump(cfg, f, indent=2, ensure_ascii=False)
         logger.info("Configuração salva com sucesso.")

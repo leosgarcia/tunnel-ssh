@@ -1,0 +1,8 @@
+2026-07-20 16:33:47,525 [INFO] src.tunnel: [INFO] Túnel encerrado pelo usuário.
+2026-07-20 16:35:40,860 [INFO] src.tunnel: Configuração salva com sucesso.
+2026-07-20 16:35:56,163 [INFO] src.tunnel: Configuração salva com sucesso.
+2026-07-20 16:35:59,842 [INFO] src.tunnel: [INFO] Conectando ao servidor…
+2026-07-20 16:35:59,846 [INFO] src.tunnel: [INFO] Iniciando: ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=10 -o ServerAliveCountMax=3 -o ExitOnForwardFailure=yes -i C:/Users/leosg/.ssh/id_ed25519_wltech_pve -L 444:127.0.0.1:443 ubuntu@144.22.177.153 -N
+2026-07-20 16:36:01,853 [INFO] src.tunnel: [OK] Túnel estabelecido com sucesso.
+2026-07-20 16:52:12,190 [INFO] src.tunnel: [INFO] Túnel encerrado pelo usuário.
+2026-07-20 16:58:37,764 [INFO] src.tunnel: [INFO] Túnel encerrado pelo usuário.

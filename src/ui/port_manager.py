@@ -44,10 +44,10 @@ class PortManagerWindow(ctk.CTkToplevel):
         btn_row = ctk.CTkFrame(self, fg_color="transparent")
         btn_row.pack(fill="x", padx=20, pady=20)
         
-        ctk.CTkButton(btn_row, text="+ Adicionar Porta", command=self._add_row, fg_color="transparent", border_width=1, text_color="#8be9fd", hover_color="#313147").pack(side="left")
+        ctk.CTkButton(btn_row, text="+ Adicionar Porta", command=self._add_row, fg_color="transparent", border_width=1, border_color="#6272a4", text_color="#f8f8f2", hover_color="#313147").pack(side="left")
         
         ctk.CTkButton(btn_row, text="✔ Salvar", command=self._save, fg_color="#50fa7b", text_color="#1e1e2e", hover_color="#3de05a").pack(side="right")
-        ctk.CTkButton(btn_row, text="Cancelar", command=self.destroy, fg_color="transparent", border_width=1, text_color="#f8f8f2", hover_color="#313147").pack(side="right", padx=(0, 10))
+        ctk.CTkButton(btn_row, text="Cancelar", command=self.destroy, fg_color="transparent", border_width=1, border_color="#6272a4", text_color="#f8f8f2", hover_color="#313147").pack(side="right", padx=(0, 10))
 
     def _populate(self) -> None:
         for p in self._config.get("ports", []):
