@@ -2,14 +2,23 @@ import customtkinter as ctk
 import datetime
 import os
 import sys
+import threading
 from tkinter import filedialog, messagebox
 from typing import Dict, Any, Optional
 
 from src.tunnel import TunnelManager, load_config, save_config
+from src.updater import (
+    ReleaseInfo,
+    UpdateError,
+    fetch_latest_release,
+    is_newer_version,
+    launch_update,
+)
 from src.ui.port_manager import PortManagerWindow
 from src.ui.host_manager import HostManagerWindow
+from src.ui.update_dialog import UpdateDialog
 
-APP_VERSION = "1.2.1"
+APP_VERSION = "2.0.0"
 APP_NAME = "WL Tech SSH Tunnel Manager"
 APP_TITLE = f"{APP_NAME} v{APP_VERSION}"
 
@@ -51,6 +60,8 @@ class App(ctk.CTk):
         self._config = load_config()
         self._status = "disconnected"
         self._uptime_job: Optional[str] = None
+        self._update_checking = False
+        self._update_dialog: Optional[UpdateDialog] = None
         
         self.manager = TunnelManager(
             on_status_change=self._on_status_change,
@@ -60,6 +71,7 @@ class App(ctk.CTk):
 
         self._build_ui()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
+        self.after(1500, lambda: self._check_for_updates(silent=True))
 
     def _build_ui(self) -> None:
         # Cabeçalho Superior (Header com Menu)
@@ -91,26 +103,38 @@ class App(ctk.CTk):
         status_frame = ctk.CTkFrame(sf, fg_color="transparent")
         status_frame.pack(side="left", padx=0)
 
-        # bolinha indicador (tamanho reduzido para proporção melhor)
-        self._dot = ctk.CTkLabel(status_frame, text="●", font=ctk.CTkFont(family="Consolas", size=18), text_color="#ff5555")
-        self._dot.grid(row=0, column=0, rowspan=2, padx=(0, 12))
+        # O indicador pertence à linha do título. Não deve ocupar também a linha
+        # do tempo, pois isso desloca visualmente a bolinha para baixo.
+        self._dot = ctk.CTkLabel(
+            status_frame,
+            text="●",
+            width=20,
+            height=24,
+            font=ctk.CTkFont(family="Consolas", size=16),
+            text_color="#ff5555",
+            anchor="center",
+        )
+        self._dot.grid(row=0, column=0, padx=(0, 8), pady=0, sticky="n")
 
-        # labels de status alinhados ao centro vertical da bolinha
+        # Nome e indicador têm a mesma altura, mantendo os centros alinhados.
         self._status_label = ctk.CTkLabel(status_frame, text="Desconectado",
+                          height=24,
                           font=ctk.CTkFont(family="Consolas", size=18, weight="bold"),
                           text_color="#ff5555", anchor="w")
-        self._status_label.grid(row=0, column=1, sticky="w")
+        self._status_label.grid(row=0, column=1, pady=0, sticky="w")
 
         self._uptime_label = ctk.CTkLabel(status_frame, text="",
+                          height=18,
                           font=ctk.CTkFont(family="Consolas", size=12),
                           text_color="#6272a4", anchor="w")
-        self._uptime_label.grid(row=1, column=1, sticky="w")
+        self._uptime_label.grid(row=1, column=1, pady=0, sticky="w")
 
-        # botão principal com tamanho e padding equilibrados
-        self._btn = ctk.CTkButton(sf, text="▶ CONECTAR",
-                      font=ctk.CTkFont(family="Consolas", size=13, weight="bold"),
+        # Dimensões compactas e fixas evitam que o botão mude de proporção
+        # entre conectar, cancelar e desconectar.
+        self._btn = ctk.CTkButton(sf, text="CONECTAR",
+                      font=ctk.CTkFont(family="Consolas", size=12, weight="bold"),
                       fg_color="#50fa7b", text_color="#1e1e2e", hover_color="#3de05a",
-                      command=self._toggle, width=160, height=40, corner_radius=8)
+                      command=self._toggle, width=148, height=36, corner_radius=6)
         self._btn.pack(side="right", padx=(10, 0))
 
         # Bloco do Host (Perfil)
@@ -144,7 +168,20 @@ class App(ctk.CTk):
         ports_hdr.pack(fill="x", padx=15, pady=(10, 0))
         
         ctk.CTkLabel(ports_hdr, text="Portas mapeadas neste host:", font=ctk.CTkFont(family="Consolas", size=10, weight="bold"), text_color="#6272a4").pack(side="left")
-        ctk.CTkButton(ports_hdr, text="⚙ Editar Portas", font=ctk.CTkFont(size=11, weight="bold"), command=self._open_port_manager, fg_color="transparent", border_width=1, border_color="#6272a4", text_color="#f8f8f2", hover_color="#313147", height=24, width=100).pack(side="right")
+        ctk.CTkButton(
+            ports_hdr,
+            text="EDITAR PORTAS",
+            width=128,
+            height=32,
+            corner_radius=6,
+            font=ctk.CTkFont(family="Consolas", size=11, weight="bold"),
+            command=self._open_port_manager,
+            fg_color="transparent",
+            border_width=1,
+            border_color="#6272a4",
+            text_color="#8be9fd",
+            hover_color="#313147",
+        ).pack(side="right")
         
         self._ports_container = ctk.CTkFrame(host_frame, fg_color="transparent")
         self._ports_container.pack(fill="x", padx=15, pady=(5, 10))
@@ -254,13 +291,14 @@ class App(ctk.CTk):
         import tkinter as tk
         m = tk.Menu(self, tearoff=0, bg="#2a2a3e", fg="#f8f8f2", activebackground="#bd93f9", activeforeground="#282a36", font=("Consolas", 10))
         m.add_command(label="🌐 Gerenciar Hosts", command=self._open_host_manager)
+        m.add_command(label="↻ Verificar atualizações", command=lambda: self._check_for_updates(silent=False))
         def _show_about():
             about_text = (
                 f"{APP_NAME}\nVersão {APP_VERSION}\n\n"
                 "Gerencie túneis SSH e múltiplos hosts com facilidade.\n\n"
                 "Copyright (c) 2026 leosgarcia\n"
                 "License: MIT License\n\n"
-                "Project: https://github.com/leosg/tunnel-ssh"
+                "Project: https://github.com/leosgarcia/tunnel-ssh"
             )
             messagebox.showinfo("Sobre", about_text)
 
@@ -278,6 +316,86 @@ class App(ctk.CTk):
             return
 
         HostManagerWindow(self, self._config, self._on_hosts_saved)
+
+    def _check_for_updates(self, silent: bool = False) -> None:
+        if self._update_checking:
+            if not silent:
+                messagebox.showinfo("Atualizações", "A verificação já está em andamento.", parent=self)
+            return
+
+        self._update_checking = True
+        if not silent:
+            self._append_log(
+                f"[{datetime.datetime.now().strftime('%H:%M:%S')}] [INFO] Verificando atualizações no GitHub...",
+                "INFO",
+            )
+
+        def worker() -> None:
+            try:
+                release = fetch_latest_release()
+                self.after(0, self._handle_update_result, release, silent)
+            except Exception as exc:
+                self.after(0, self._handle_update_error, exc, silent)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _handle_update_result(self, release: ReleaseInfo, silent: bool) -> None:
+        self._update_checking = False
+        try:
+            update_available = is_newer_version(release.version, APP_VERSION)
+        except UpdateError as exc:
+            self._handle_update_error(exc, silent)
+            return
+
+        ignored_version = str(self._config.get("ignored_update_version", ""))
+        if update_available and (not silent or ignored_version != release.version):
+            if self._update_dialog and self._update_dialog.winfo_exists():
+                self._update_dialog.focus()
+                return
+            self._update_dialog = UpdateDialog(
+                self,
+                release=release,
+                current_version=APP_VERSION,
+                ignored=ignored_version == release.version,
+                on_ignore=self._set_ignored_update,
+                on_install=self._install_update,
+            )
+            return
+
+        if not silent:
+            if update_available:
+                messagebox.showinfo(
+                    "Atualização disponível",
+                    f"A versão {release.version} está disponível, mas foi marcada para não avisar automaticamente.",
+                    parent=self,
+                )
+            else:
+                messagebox.showinfo(
+                    "Atualizações",
+                    f"Você já está usando a versão mais recente ({APP_VERSION}).",
+                    parent=self,
+                )
+
+    def _handle_update_error(self, error: object, silent: bool) -> None:
+        self._update_checking = False
+        message = str(error) if isinstance(error, UpdateError) else "Falha inesperada ao consultar atualizações."
+        if silent:
+            return
+        else:
+            messagebox.showerror("Falha ao verificar atualizações", message, parent=self)
+
+    def _set_ignored_update(self, version: str, ignored: bool) -> None:
+        current = str(self._config.get("ignored_update_version", ""))
+        if ignored:
+            self._config["ignored_update_version"] = version
+        elif current == version:
+            self._config["ignored_update_version"] = ""
+        save_config(self._config)
+
+    def _install_update(self, downloaded_executable: str) -> None:
+        self.manager.stop()
+        launch_update(downloaded_executable)
+        self.destroy()
 
     def _on_hosts_saved(self, new_config: Dict[str, Any]) -> None:
         self._config = dict(new_config)
@@ -332,12 +450,12 @@ class App(ctk.CTk):
         # (cor_status, texto_status, texto_botao, bool_desligado, cor_botao, hover_botao)
         # status_color, texto_status, texto_botao, bool_desligado, cor_botao, hover_botao
         cfg = {
-            "connected":    ("#50fa7b", "Conectado",     "▪ DESCONECTAR",  False,  "#ff5555", "#cc4444"),
-            "connecting":   ("#f1fa8c", "Conectando...", "▪ CANCELAR",     False, "#ff5555", "#cc4444"),
-            "reconnecting": ("#f1fa8c", "Reconectando...","▪ CANCELAR",     False, "#ff5555", "#cc4444"),
-            "disconnected": ("#ff5555", "Desconectado",  "▶ CONECTAR",     True,  "#50fa7b", "#3de05a"),
-            "error":        ("#ff5555", "Erro",          "▶ TENTAR NOVAMENTE", True, "#50fa7b", "#3de05a"),
-        }.get(status, ("#6272a4", status, "▶ CONECTAR", True, "#50fa7b", "#3de05a"))
+            "connected":    ("#50fa7b", "Conectado",      "DESCONECTAR",      False, "#ff5555", "#cc4444"),
+            "connecting":   ("#f1fa8c", "Conectando...",  "CANCELAR",         False, "#ff5555", "#cc4444"),
+            "reconnecting": ("#f1fa8c", "Reconectando...", "CANCELAR",         False, "#ff5555", "#cc4444"),
+            "disconnected": ("#ff5555", "Desconectado",   "CONECTAR",          True, "#50fa7b", "#3de05a"),
+            "error":        ("#ff5555", "Erro",           "TENTAR NOVAMENTE",  True, "#50fa7b", "#3de05a"),
+        }.get(status, ("#6272a4", status, "CONECTAR", True, "#50fa7b", "#3de05a"))
 
         status_color, text, btn_text, is_off, btn_color, btn_hover = cfg
         
@@ -357,7 +475,8 @@ class App(ctk.CTk):
         self._btn.configure(
             text=btn_text,
             fg_color=btn_color,
-            hover_color=btn_hover
+            hover_color=btn_hover,
+            text_color="#1e1e2e" if is_off else "#f8f8f2",
         )
 
         dot_color = "#50fa7b" if status == "connected" else "#6272a4"

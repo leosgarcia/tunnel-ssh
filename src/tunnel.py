@@ -31,7 +31,8 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "ssh_key": "",
     "reconnect_delay": 5,
     "ports": [],
-    "saved_hosts": {}
+    "saved_hosts": {},
+    "ignored_update_version": "",
 }
 
 def load_config() -> Dict[str, Any]:
@@ -44,6 +45,7 @@ def load_config() -> Dict[str, Any]:
                 if "ssh_key" not in data: data["ssh_key"] = DEFAULT_CONFIG["ssh_key"]
                 if "ports" not in data: data["ports"] = DEFAULT_CONFIG["ports"]
                 if "saved_hosts" not in data: data["saved_hosts"] = {}
+                if "ignored_update_version" not in data: data["ignored_update_version"] = ""
                 
                 # Migração inicial para garantir que o host atual exista no dicionário
                 current = data["ssh_host"]

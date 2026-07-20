@@ -9,6 +9,7 @@ __pycache__/
 # Distribution / packaging
 build/
 dist/
+release/
 *.egg-info/
 .installed.cfg
 *.egg

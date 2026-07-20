@@ -5,7 +5,7 @@
 
   **Gerenciador de túneis SSH seguro, moderno e open-source para Windows.**
 
-  Versão atual: 1.2.1
+  Versão atual: 2.0.0
 
   [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
   [![CustomTkinter](https://img.shields.io/badge/UI-CustomTkinter-blueviolet.svg)](https://github.com/TomSchimansky/CustomTkinter)
@@ -30,6 +30,7 @@ Perfeito para acessar dashboards restritos, bancos de dados em servidores remoto
 - **Port Forwarding Descomplicado**: Adicione, remova e agrupe portas facilmente.
 - **Reconexão Automática**: Se a conexão cair, o aplicativo tentará reconectar automaticamente.
 - **Logs em Tempo Real**: Console visual na própria tela para depuração imediata.
+- **Atualização Segura**: Verifica novas versões no GitHub oficial, exibe as notas e só baixa após sua confirmação.
 - **Leve e Portátil**: Pode ser distribuído como um executável `.exe` independente.
 
 ## 🚀 Instalação
@@ -43,11 +44,19 @@ Perfeito para acessar dashboards restritos, bancos de dados em servidores remoto
 
 ## 🛠️ Como Usar
 
-1. Ao abrir o app, clique em **⚙ Servidor** no canto superior direito.
+1. Ao abrir o app, acesse **Menu → Gerenciar Hosts** no canto superior direito.
 2. Defina o Host remoto no formato `usuario@host` ou `usuario@IP`.
 3. Opcionalmente, indique o caminho para a sua chave privada SSH (deixe em branco se usar `ssh-agent`).
-4. Vá em **⚙ Portas** e configure o encaminhamento (ex: Porta Local: `8443`, Remote Host: `127.0.0.1`, Remote Port: `443`).
-5. Clique em **▶ CONECTAR** na tela principal. O status ficará verde e você poderá acessar seus serviços em `localhost`!
+4. Clique em **EDITAR PORTAS** e configure o encaminhamento (ex: Porta Local: `8443`, Remote Host: `127.0.0.1`, Remote Port: `443`).
+5. Clique em **CONECTAR** na tela principal. O status ficará verde e você poderá acessar seus serviços em `localhost`!
+
+## 🔄 Atualizações
+
+O aplicativo verifica automaticamente, em segundo plano, se há uma nova versão publicada. Nenhum arquivo é baixado sem sua autorização. Também é possível usar **Menu → Verificar atualizações**.
+
+Quando uma atualização estiver disponível, a janela mostra as notas da versão, permite ignorar aquele aviso e acompanha o download. Antes da instalação, o executável é validado com o digest SHA-256 informado pelo GitHub. Durante a troca, a versão atual é mantida como backup e restaurada automaticamente se a nova versão não iniciar corretamente.
+
+As atualizações são aceitas exclusivamente da última release publicada em `leosgarcia/tunnel-ssh`, cujo asset deve se chamar exatamente `wltech-tunnel.exe`. A instalação automática está disponível no executável compilado para Windows; ao executar pelo código-fonte, a verificação continua disponível, mas o aplicativo não substitui os arquivos do projeto.
 
 ## 💻 Compilando do Código-Fonte
 
@@ -55,7 +64,7 @@ Se quiser compilar o executável por conta própria:
 
 1. Clone o repositório:
    ```bash
-   git clone https://github.com/leosg/tunnel-ssh.git
+   git clone https://github.com/leosgarcia/tunnel-ssh.git
    cd tunnel-ssh
    ```
 2. Instale o Python (3.11 ou superior).
@@ -64,6 +73,16 @@ Se quiser compilar o executável por conta própria:
    .\build.bat
    ```
    *O script fará a instalação dos pacotes necessários via pip e gerará o executável na pasta `dist/`.*
+
+### Publicando uma versão atualizável
+
+1. Atualize `APP_VERSION` em `src/ui/app.py`.
+2. Gere o executável com `build.bat`.
+3. Crie uma release pública com a tag no formato `vX.Y.Z`.
+4. Escreva as notas da versão no corpo da release.
+5. Anexe `dist/wltech-tunnel.exe` com o nome exato `wltech-tunnel.exe`.
+
+Drafts e pré-releases não são retornados pelo endpoint de última release usado pelo aplicativo.
 
 ## 🤝 Como Contribuir
 

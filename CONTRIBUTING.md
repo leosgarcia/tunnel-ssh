@@ -5,14 +5,14 @@ Ficamos muito felizes que você tenha interesse em contribuir com o **wltech SSH
 ## 🛠 Como posso contribuir?
 
 ### 🐛 Reportando Bugs
-Se você encontrar um comportamento inesperado, erro de conexão ou falha na interface, abra uma [Issue](https://github.com/leosg/tunnel-ssh/issues) descrevendo o problema.
+Se você encontrar um comportamento inesperado, erro de conexão ou falha na interface, abra uma [Issue](https://github.com/leosgarcia/tunnel-ssh/issues) descrevendo o problema.
 **Por favor, inclua:**
 - Passos para reproduzir o bug.
 - Qual sistema operacional você está usando.
 - Quaisquer logs de erro que apareçam na tela (oculte IPs ou senhas se houver).
 
 ### ✨ Sugerindo Funcionalidades
-Queremos ouvir suas ideias! Abra uma [Issue](https://github.com/leosg/tunnel-ssh/issues) detalhando a nova funcionalidade, por que ela seria útil e como ela deveria funcionar na interface (se aplicável).
+Queremos ouvir suas ideias! Abra uma [Issue](https://github.com/leosgarcia/tunnel-ssh/issues) detalhando a nova funcionalidade, por que ela seria útil e como ela deveria funcionar na interface (se aplicável).
 
 ### 💻 Contribuindo com Código
 
