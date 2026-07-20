@@ -1,10 +1,8 @@
-# Release 1.2.0
+## Release 1.2.1
 
 ## O que há de novo
-- Correção de persistência para hosts e portas
-- Validação de hosts vazios e duplicados
-- Interface mais consistente para edição e gerenciamento
-- Executável reconstruído com menor risco de perda de configuração
+- Alinhamento visual: indicador de status centralizado com o texto
+- Botão de conectar/desconectar reajustado para proporções melhores
 
 ## Arquivos de distribuição
 - dist/wltech-tunnel.exe

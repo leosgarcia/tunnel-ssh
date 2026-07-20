@@ -9,7 +9,7 @@ from src.tunnel import TunnelManager, load_config, save_config
 from src.ui.port_manager import PortManagerWindow
 from src.ui.host_manager import HostManagerWindow
 
-APP_VERSION = "1.2.0"
+APP_VERSION = "1.2.1"
 APP_NAME = "WL Tech SSH Tunnel Manager"
 APP_TITLE = f"{APP_NAME} v{APP_VERSION}"
 
@@ -87,23 +87,31 @@ class App(ctk.CTk):
         sf = ctk.CTkFrame(self, fg_color="transparent")
         sf.pack(fill="x", padx=20, pady=(15, 5))
         
-        self._dot = ctk.CTkLabel(sf, text="●", font=ctk.CTkFont(family="Consolas", size=36), text_color="#ff5555")
-        # alinhar verticalmente o indicador com o bloco de texto
-        self._dot.pack(side="left", pady=8)
-        
-        ic = ctk.CTkFrame(sf, fg_color="transparent")
-        ic.pack(side="left", padx=15, pady=8)
-        
-        self._status_label = ctk.CTkLabel(ic, text="Desconectado", font=ctk.CTkFont(family="Consolas", size=18, weight="bold"), text_color="#ff5555", anchor="w")
-        # pequenos ajustes de padding para alinhar ao indicador
-        self._status_label.pack(anchor="w", pady=(0, 2))
-        
-        self._uptime_label = ctk.CTkLabel(ic, text="", font=ctk.CTkFont(family="Consolas", size=12), text_color="#6272a4", anchor="w")
-        self._uptime_label.pack(anchor="w")
+        # container para indicador + textos (usa grid para alinhamento preciso)
+        status_frame = ctk.CTkFrame(sf, fg_color="transparent")
+        status_frame.pack(side="left", padx=0)
 
-        self._btn = ctk.CTkButton(sf, text="▶ CONECTAR", font=ctk.CTkFont(family="Consolas", size=14, weight="bold"),
-                                  fg_color="#50fa7b", text_color="#1e1e2e", hover_color="#3de05a", command=self._toggle, height=36)
-        self._btn.pack(side="right", fill="y", padx=(10, 0))
+        # bolinha indicador (tamanho reduzido para proporção melhor)
+        self._dot = ctk.CTkLabel(status_frame, text="●", font=ctk.CTkFont(family="Consolas", size=18), text_color="#ff5555")
+        self._dot.grid(row=0, column=0, rowspan=2, padx=(0, 12))
+
+        # labels de status alinhados ao centro vertical da bolinha
+        self._status_label = ctk.CTkLabel(status_frame, text="Desconectado",
+                          font=ctk.CTkFont(family="Consolas", size=18, weight="bold"),
+                          text_color="#ff5555", anchor="w")
+        self._status_label.grid(row=0, column=1, sticky="w")
+
+        self._uptime_label = ctk.CTkLabel(status_frame, text="",
+                          font=ctk.CTkFont(family="Consolas", size=12),
+                          text_color="#6272a4", anchor="w")
+        self._uptime_label.grid(row=1, column=1, sticky="w")
+
+        # botão principal com tamanho e padding equilibrados
+        self._btn = ctk.CTkButton(sf, text="▶ CONECTAR",
+                      font=ctk.CTkFont(family="Consolas", size=13, weight="bold"),
+                      fg_color="#50fa7b", text_color="#1e1e2e", hover_color="#3de05a",
+                      command=self._toggle, width=160, height=40, corner_radius=8)
+        self._btn.pack(side="right", padx=(10, 0))
 
         # Bloco do Host (Perfil)
         host_frame = ctk.CTkFrame(self, fg_color="#21222c", corner_radius=10, border_width=1, border_color="#44475a")

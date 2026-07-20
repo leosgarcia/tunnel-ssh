@@ -5,7 +5,7 @@
 
   **Gerenciador de túneis SSH seguro, moderno e open-source para Windows.**
 
-  Versão atual: 1.2.0 · Release candidate
+  Versão atual: 1.2.1
 
   [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
   [![CustomTkinter](https://img.shields.io/badge/UI-CustomTkinter-blueviolet.svg)](https://github.com/TomSchimansky/CustomTkinter)
