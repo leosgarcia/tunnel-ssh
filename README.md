@@ -1,7 +1,7 @@
 <div align="center">
   <img src="assets/icon.png" alt="SSH Tunnel Manager Logo" width="128">
   
-  # wltech SSH Tunnel Manager
+  # WL Tech SSH Tunnel Manager
 
   **Gerenciador de túneis SSH seguro, moderno e open-source para Windows.**
 
