@@ -94,9 +94,11 @@ Toda ajuda é bem-vinda! Se você achou um bug ou tem uma ideia nova, veja o nos
 
 Se esta ferramenta facilitou a sua vida no trabalho ou no dia a dia, considere pagar um café! Seu apoio ajuda muito a manter o desenvolvimento ativo.
 
-<a href="https://buymeacoffee.com/leosgarcia" target="_blank">
-  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" >
-</a>
+<p align="center">
+  <a href="https://buymeacoffee.com/leosgarcia" target="_blank">
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" >
+  </a>
+</p>
 
 <br>
 
